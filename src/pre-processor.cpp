@@ -57,23 +57,35 @@ string removeWhiteSpace(string str) {
   return str;
 }
 
+bool PreProcessor::isDefined(string symbol) {
+  for (list<Symbol *>::iterator it = equList.begin(); it != equList.end(); it++)
+    if ((*it)->getSymbol() == symbol)
+      return true;
+
+  return false;
+}
+
 bool PreProcessor::getEQU(string line) {
   string str;
   stringstream iss(line);
-  vector<string> pieces;
-  Symbol * symbol;
+  vector<string> aux;
 
   if (line.find("EQU") != -1) {
     while (getline(iss, str, ':')) {
-      pieces.push_back(str);
+      aux.push_back(str);
     }
 
-    pieces[0] = removeWhiteSpace(pieces[0]);
-    pieces[1].erase(pieces[1].find("EQU"), pieces[1].find("EQU") + 3);
+    string symbol = removeWhiteSpace(aux[0]);
+    
+    string value = removeWhiteSpace(aux[1]);
+    value.erase(value.find("EQU"), value.find("EQU") + 3);
 
-    symbol = new Symbol(pieces[0], pieces[1]);
-
-    equList.push_back(symbol);
+    if (isDefined(symbol)) {
+      cout << "Semantic error: symbol " << symbol << " already defined" << endl;
+      exit(0);
+    } else {
+      equList.push_back(new Symbol(symbol, value));
+    }
 
     return true;
   }
@@ -84,14 +96,22 @@ bool PreProcessor::getEQU(string line) {
 bool PreProcessor::getIF(string line) {
   string str;
   stringstream iss(line);
-  vector<string> pieces;
+  vector<string> aux;
 
   if (line.find("IF") != -1) {
     while (getline(iss, str, ' ')) {
-      pieces.push_back(str);
+      aux.push_back(str);
     }
 
-    ifList.push_back(new Symbol(pieces[0], pieces[1]));
+    string symbol = removeWhiteSpace(aux[0]);
+    string value = removeWhiteSpace(aux[1]);
+
+    if (!isDefined(value)) {
+      cout << "Semantic error: symbol " << value << " not defined" << endl;
+      exit(0);
+    } else {
+      ifList.push_back(new Symbol(symbol, value));
+    }
 
     return true;
   }
@@ -99,31 +119,46 @@ bool PreProcessor::getIF(string line) {
   return false;
 }
 
+string PreProcessor::translateEQU(string line) {
+  stringstream ss(line);
+  string token;
+  int position;
+
+  while (ss >> token) {
+    for (list<Symbol *>::iterator it = equList.begin(); it != equList.end(); it++) {
+      if ((*it)->getSymbol() == token) {
+        position = line.find((*it)->getSymbol());
+        line.replace(position, (*it)->getSymbol().size(), (*it)->getValue());
+      }
+    }
+  }
+
+  return line;
+}
+
 bool PreProcessor::evaluateIF() {
   Symbol * ifSymbol = ifList.back();
 
   ifList.pop_back();
 
-  cout << "Found symbol: " << ifSymbol->getValue() << endl;
-
   for (list<Symbol *>::iterator it = equList.begin(); it != equList.end(); it++) {
-    cout << "Scanning EQU symbol: " << (*it)->getSymbol() << " and value: " << stoi((*it)->getValue()) << endl;
-
     if ((*it)->getSymbol() == ifSymbol->getValue() && stoi((*it)->getValue()) == 0) {
       return true;
     }
   }
+
+  return false;
 };
 
 void PreProcessor::listEQU() {
   for (list<Symbol *>::iterator it = equList.begin(); it != equList.end(); it++) {
-    cout << (*it)->getSymbol() << " " << (*it)->getValue() << endl;
+    cout << "Symbol: " << (*it)->getSymbol() << " | Value: " << (*it)->getValue() << endl;
   }
 }
 
 void PreProcessor::listIF() {
   for (list<Symbol *>::iterator it = ifList.begin(); it != ifList.end(); it++) {
-    cout << (*it)->getSymbol() << " " << (*it)->getValue() << endl;
+    cout << "Symbol: " << (*it)->getSymbol() << " | Value: " << (*it)->getValue() << endl;
   }
 }
 
@@ -136,21 +171,19 @@ void PreProcessor::processFile() {
       newLine = toUpper(line);
       newLine = removeComment(newLine);
       newLine = removeExtraSpaces(newLine);
-
-      if (!getEQU(newLine) && !getIF(newLine)) {
-        processedSource << newLine << endl;
-      }
-
-      if (getIF(newLine)) {
-        blocked = evaluateIF();
+ 
+      if (!getEQU(newLine)) {
+        if (!getIF(newLine)) {
+          newLine = translateEQU(newLine);
+          processedSource << newLine << endl;
+        } else {
+          blocked = evaluateIF();
+        }
       }
     } else {
       blocked = false;
     }
   }
-
-  // listEQU();
-  // listIF();
 
   source.close();
   processedSource.close();

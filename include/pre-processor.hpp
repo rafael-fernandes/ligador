@@ -19,6 +19,9 @@ class PreProcessor {
     string removeExtraSpaces(string line);
 
     bool getEQU(string line);
+    string translateEQU(string line);
+
+    bool isDefined(string symbol);
     void listEQU();
 
     bool getIF(string line);
