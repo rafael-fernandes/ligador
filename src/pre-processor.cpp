@@ -8,7 +8,7 @@ PreProcessor::PreProcessor(string file) {
     exit(1);
   }
 
-  processedSource.open("processed/" + file + "_processed.asm");
+  processedSource.open("processed/" + file + ".pre");
 }
 
 string PreProcessor::toUpper(string line) {

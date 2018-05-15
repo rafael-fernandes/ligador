@@ -1,10 +1,13 @@
 #include <iostream>
 #include "include/pre-processor.hpp"
+#include "include/macro-processor.hpp"
 
 int main() {
-  PreProcessor * preprocessor = new PreProcessor("teste2");
+  PreProcessor * preProcessor = new PreProcessor("teste2");
+  MacroProcessor * macroProcessor = new MacroProcessor("teste2");
 
-  preprocessor->processFile();
+  preProcessor->processFile();
+  macroProcessor->processFile();
 
   return 0;
 }
