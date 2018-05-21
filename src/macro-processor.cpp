@@ -39,8 +39,8 @@ vector<string> MacroProcessor::getMacros() {
   MacroDefinition * macroDefinition;
 
   for (int i = 0; i < intermediateCode.size(); i++) {
-    // cout << "code[" << i << "]" << intermediateCode[i] << endl;
-    
+    // cout << "code[" << i << "]: " << intermediateCode[i] << endl;
+
     // if line contains MACRO
     if (regex_search(intermediateCode[i], match, regex(": MACRO"))) {
       // get MACRO name
@@ -48,14 +48,32 @@ vector<string> MacroProcessor::getMacros() {
       string name(match[0]);
       name.erase(remove(name.begin(), name.end(), ':'), name.end());
 
-      // get MACRO args count
-      regex_search(intermediateCode[i], match, regex("(&)"));
-      int args = match.size();
+      // prepare to get MACRO args
+      stringstream ss(intermediateCode[i]);
+      string token;
 
+      vector<string> argsVector;
+
+      // tokenize
+      while (ss >> token) {
+        // if token is arg
+        if (regex_search(token, match, regex("&"))) {
+          // remove whitespace
+          token.erase(remove(token.begin(), token.end(), ' '), token.end());
+
+          // remove ;
+          token.erase(remove(token.begin(), token.end(), ','), token.end());
+
+          // push into args vector of MACRO
+          argsVector.push_back(token);
+        }
+      }
+
+      // create new MACRO name
       macroName = new MacroName();
-
+      
       macroName->setName(name);
-      macroName->setArgs(args);
+      macroName->setArgs(argsVector.size());
       macroName->setIndex(macroDefinitionCounter);
 
       // push MACRO into MNT
@@ -71,6 +89,18 @@ vector<string> MacroProcessor::getMacros() {
 
       while (!regex_search(intermediateCode[i], match, regex("ENDMACRO"))) {
         definitionBuffer.append(intermediateCode[i] + "\n");
+
+        stringstream ss(intermediateCode[i]);
+        string token;
+
+        while (ss >> token)
+          for (int z = 0; z < argsVector.size(); z++)
+            if (token == argsVector[z]) {
+              // cout << "match: " << token << " at line " << i << endl;
+              // cout << "token init at definitionBuffer: " << definitionBuffer.find(token) << endl;
+              definitionBuffer.replace(definitionBuffer.find(token), token.size(), to_string(z));
+            }
+
         i++;
       }
 
@@ -97,14 +127,61 @@ void MacroProcessor::expandMDT() {
     for (int i = 0; i < macroDefinitionCounter; i++) {
       definition = MDT[i]->getDefinition();
 
-      // if MACRO name is present in MDT definition
-      if (definition.find(macro->getName()) != -1) {
-        
-        // expand it
-        definition.replace(definition.find(macro->getName()), macro->getName().size(), MDT[macro->getIndex()]->getDefinition());
+      stringstream ss(definition);
+      string line;
 
-        // update MDT
-        MDT[i]->setDefinition(definition);
+      // split MACRO definition into lines
+      while (getline(ss, line, '\n')) {
+
+        // if MACRO name is present in MDT definition line
+        if (line.find(macro->getName()) != -1) {
+          // set previous line as current line
+          string previousLine = line;
+
+          stringstream ss(line);
+          string token;
+          vector<string> argsVector;
+
+          // get args from MACRO call
+          if (ss >> token) {
+            for (int j = 0; j < macro->getArgs(); j++) {
+              ss >> token;
+
+              // remove whitespace
+              token.erase(remove(token.begin(), token.end(), ' '), token.end());
+
+              // remove ,
+              token.erase(remove(token.begin(), token.end(), ','), token.end());
+
+              argsVector.push_back(token);
+              // cout << j << ": " << token << endl;
+            }
+          }
+
+          // replace line by definition
+          line.replace(
+            0, line.size(),
+            MDT[macro->getIndex()]->getDefinition()
+          );
+
+          // replace generic args by MACRO call args
+          for (int j = 0; j < macro->getArgs(); j++) {
+            line.replace(
+              line.find(to_string(j)), 1,
+              argsVector[j]
+            );
+          }
+
+          // replace previous line by new line with expanded definition
+          definition.replace(
+            definition.find(previousLine),
+            previousLine.size(),
+            line
+          );
+
+          // update MDT
+          MDT[i]->setDefinition(definition);
+        }
       }
     }
   }
@@ -121,13 +198,46 @@ void MacroProcessor::expandMacroCalls(vector<string> source) {
     // for each MACRO name in MNT
     for (auto macro:MNT) {
       
-      // if line has MACRO call
+      // if MACRO name is present in MDT definition line
       if (line.find(macro->getName()) != -1) {
-        // cout << "Found " << macro->getName() << endl;
-        
-        // expand it
-        outputCode.push_back(MDT[macro->getIndex()]->getDefinition());
-        // output << MDT[macro->getIndex()]->getDefinition() << endl;
+        // set previous line as current line
+        string previousLine = line;
+
+        stringstream ss(line);
+        string token;
+        vector<string> argsVector;
+
+        // get args from MACRO call
+        if (ss >> token) {
+          for (int j = 0; j < macro->getArgs(); j++) {
+            ss >> token;
+
+            // remove whitespace
+            token.erase(remove(token.begin(), token.end(), ' '), token.end());
+
+            // remove ,
+            token.erase(remove(token.begin(), token.end(), ','), token.end());
+
+            argsVector.push_back(token);
+            // cout << j << ": " << token << endl;
+          }
+        }
+
+        // replace line by definition
+        line.replace(
+          0, line.size(),
+          MDT[macro->getIndex()]->getDefinition()
+        );
+
+        // replace generic args by MACRO call args
+        for (int j = 0; j < macro->getArgs(); j++) {
+          line.replace(
+            line.find(to_string(j)), 1,
+            argsVector[j]
+          );
+        }
+
+        outputCode.push_back(line);
 
         found = true;
       }

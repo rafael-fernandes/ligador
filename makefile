@@ -7,10 +7,13 @@ SRC = src
 PROCESSED = processed
 TMP = tmp
 
-all: symbol.o pre-processor.o macro-processor.o instructions.o main
+all: symbol.o assembler.o pre-processor.o macro-processor.o instructions.o main
 
 symbol.o: $(SRC)/symbol.cpp $(INCLUDE)/symbol.hpp
 	$(CC) $(LIBS) -c $(SRC)/symbol.cpp -I $(INCLUDE) -o $(OBJ)/symbol.o
+
+assembler.o: $(SRC)/assembler.cpp $(INCLUDE)/assembler.hpp
+	$(CC) $(LIBS) -c $(SRC)/assembler.cpp -I $(INCLUDE) -o $(OBJ)/assembler.o
 
 macro-processor.o: $(SRC)/macro-processor.cpp $(INCLUDE)/macro-processor.hpp
 	$(CC) $(LIBS) -c $(SRC)/macro-processor.cpp -I $(INCLUDE) -o $(OBJ)/macro-processor.o
