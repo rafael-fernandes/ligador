@@ -1,4 +1,20 @@
 #include "../include/macro-processor.hpp"
+#define DEBUG 1
+#define BEGIN_RED_COLOR "\033[1;31m"
+#define BEGIN_BLUE_COLOR "\033[1;34m"
+#define BEGIN_GREEN_COLOR "\033[1;32m"
+#define END_COLOR "\033[0m\n"
+
+std::string ReplaceAll(std::string str, const std::string& from, const std::string& to) {
+  size_t start_pos = 0;
+ 
+  while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+      str.replace(start_pos, from.length(), to);
+      start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+  }
+
+  return str;
+}
 
 // macroName constructor
 MacroName::MacroName() {};
@@ -39,7 +55,10 @@ vector<string> MacroProcessor::getMacros() {
   MacroDefinition * macroDefinition;
 
   for (int i = 0; i < intermediateCode.size(); i++) {
-    // cout << "code[" << i << "]: " << intermediateCode[i] << endl;
+
+    #if DEBUG
+      cout << BEGIN_RED_COLOR << "code[" << i << "]: " << intermediateCode[i] << END_COLOR;
+    #endif
 
     // if line contains MACRO
     if (regex_search(intermediateCode[i], match, regex(": MACRO"))) {
@@ -79,6 +98,10 @@ vector<string> MacroProcessor::getMacros() {
       // push MACRO into MNT
       MNT.push_back(macroName);
 
+      #if DEBUG
+        cout << BEGIN_GREEN_COLOR << macroName->getName() << " inserida na MNT" << END_COLOR << endl;
+      #endif
+
       macroDefinitionCounter++;
 
       // get current MACRO defnition
@@ -88,6 +111,10 @@ vector<string> MacroProcessor::getMacros() {
       i++;
 
       while (!regex_search(intermediateCode[i], match, regex("ENDMACRO"))) {
+        #if DEBUG
+          cout << BEGIN_RED_COLOR << "code[" << i << "]: " << intermediateCode[i] << END_COLOR;
+        #endif
+
         definitionBuffer.append(intermediateCode[i] + "\n");
 
         stringstream ss(intermediateCode[i]);
@@ -108,6 +135,11 @@ vector<string> MacroProcessor::getMacros() {
       
       // push MACRO definition into MDT
       MDT[macroName->getIndex()] = macroDefinition;
+
+      #if DEBUG
+        cout << BEGIN_GREEN_COLOR << "Definição de " << macroName->getName() << " " << macroName->getArgs() << " " << macroName->getIndex() << END_COLOR << endl;
+        cout << BEGIN_GREEN_COLOR << MDT[macroName->getIndex()]->getDefinition() << END_COLOR << endl;
+      #endif
     } else {
       newSource.push_back(intermediateCode[i]);
     }
@@ -121,7 +153,9 @@ void MacroProcessor::expandMDT() {
 
   // for each MACRO in MNT
   for (auto macro:MNT) {
-    // cout << macro->getName() << endl;
+    #if DEBUG
+      cout << BEGIN_BLUE_COLOR << "Avaliando " << macro->getName() << END_COLOR << endl;
+    #endif
 
     // for each MACRO definition in MDT
     for (int i = 0; i < macroDefinitionCounter; i++) {
@@ -135,6 +169,11 @@ void MacroProcessor::expandMDT() {
 
         // if MACRO name is present in MDT definition line
         if (line.find(macro->getName()) != -1) {
+          #if DEBUG
+            cout << BEGIN_GREEN_COLOR << macro->getName() << " encontrada na definicao de " << MNT[i]->getName() << END_COLOR << endl;
+            cout << BEGIN_GREEN_COLOR << "linha: " << line << END_COLOR << endl;
+          #endif
+
           // set previous line as current line
           string previousLine = line;
 
@@ -158,6 +197,13 @@ void MacroProcessor::expandMDT() {
             }
           }
 
+          #if DEBUG
+          cout << BEGIN_RED_COLOR << "Argumentos (" << argsVector.size() << "): ";
+          for (int a = 0; a < argsVector.size(); a++)
+            cout << argsVector[a] << " ";
+          cout << END_COLOR << endl;
+          #endif
+
           // replace line by definition
           line.replace(
             0, line.size(),
@@ -166,11 +212,12 @@ void MacroProcessor::expandMDT() {
 
           // replace generic args by MACRO call args
           for (int j = 0; j < macro->getArgs(); j++) {
-            line.replace(
-              line.find(to_string(j)), 1,
-              argsVector[j]
-            );
+            line = ReplaceAll(line, to_string(j), argsVector[j]);
           }
+
+          #if DEBUG
+            cout << line << endl;
+          #endif
 
           // replace previous line by new line with expanded definition
           definition.replace(
@@ -231,10 +278,7 @@ void MacroProcessor::expandMacroCalls(vector<string> source) {
 
         // replace generic args by MACRO call args
         for (int j = 0; j < macro->getArgs(); j++) {
-          line.replace(
-            line.find(to_string(j)), 1,
-            argsVector[j]
-          );
+          line = ReplaceAll(line, to_string(j), argsVector[j]);
         }
 
         outputCode.push_back(line);

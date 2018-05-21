@@ -1,5 +1,0 @@
-LOAD A
-STORE B
-LOAD Y
-STORE Z
-

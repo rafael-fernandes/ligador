@@ -1,9 +1,0 @@
-Line 0:
-LOAD 0
-STORE 1
-
-Line 1:
-LOAD Y
-STORE Z
-
-
