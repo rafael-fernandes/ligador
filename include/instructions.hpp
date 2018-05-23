@@ -5,8 +5,8 @@ using namespace std;
 
 class Instruction {
   public:
-    Instruction(string mnemonic, string opcode, int length);
+    Instruction(string mnemonic, string opcode, int operands, int length);
 
     string mnemonic, opcode;
-    int length;
+    int operands, length;
 };

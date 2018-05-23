@@ -1,3 +1,6 @@
+#ifndef SYMBOL_H
+#define SYMBOL_H
+
 #include <iostream>
 
 using namespace std;
@@ -33,3 +36,5 @@ inline void Symbol::setSymbol(string symbol) {
 inline void Symbol::setValue(string value) {
   this->value = value;
 }
+
+#endif

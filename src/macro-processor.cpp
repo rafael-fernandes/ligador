@@ -1,5 +1,5 @@
 #include "../include/macro-processor.hpp"
-#define DEBUG 1
+#define DEBUG 0
 #define BEGIN_RED_COLOR "\033[1;31m"
 #define BEGIN_BLUE_COLOR "\033[1;34m"
 #define BEGIN_GREEN_COLOR "\033[1;32m"
