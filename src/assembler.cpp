@@ -3,7 +3,7 @@
 void Assembler::buildIT() {
   IT[1] = new Instruction("ADD", "01", 1, 2);
   IT[2] = new Instruction("SUB", "02", 1, 2);
-  IT[3] = new Instruction("MUL", "03", 1, 2);
+  IT[3] = new Instruction("MULT", "03", 1, 2);
   IT[4] = new Instruction("DIV", "04", 1, 2);
   IT[5] = new Instruction("JMP", "05", 1, 2);
   IT[6] = new Instruction("JMPN", "06", 1, 2);
@@ -41,11 +41,25 @@ void Assembler::firstPassage() {
 
   int positionCounter = 0;
 
+  bool textStarted, dataStarted;
+
   // while there is source code
   for (int i = 0; i < intermediateCode.size(); i++) {
     
     // get line from source code
     line = intermediateCode[i];
+
+    if (line.find("SECTION TEXT") != -1) {
+      textStarted = true;
+      dataStarted = false;
+      continue;
+    }
+    
+    if (line.find("SECTION DATA") != -1) {
+      textStarted = false;
+      dataStarted = true;
+      continue;
+    }
 
     // split elements into label, operation, operands and comments
     Command * command = new Command();
@@ -96,19 +110,35 @@ void Assembler::firstPassage() {
             if (IT[j]->mnemonic == command->operation) {
               positionCounter += IT[j]->length;
               instructionFound = true;
+
+              // get op1 and/or op2
+              for (int k = 0; k < IT[j]->operands; k++) {
+                // get op
+                ss >> token;
+
+                // insert op into command operands
+                command->operands.push_back(token);
+              }
             }
           }
 
           // if operation is not a instruction
           if (!instructionFound) {
             // if operation is directive CONST
-            if (command->operation == "CONST")
+            if (command->operation == "CONST") {
               positionCounter += 1;
+
+              // get CONST value
+              ss >> token;
+              
+              command->operands.push_back(token);
+            }
 
             // if operation is directive SPACE
             else if (command->operation == "SPACE") {
               if (ss >> token) {
                 positionCounter += stoi(token);
+                command->operands.push_back(token);
               }
 
               else {
@@ -128,33 +158,91 @@ void Assembler::firstPassage() {
           if (IT[j]->mnemonic == command->operation) {
             positionCounter += IT[j]->length;
             instructionFound = true;
+
+            // get op1 and/or op2
+            for (int k = 0; k < IT[j]->operands; k++) {
+              // get op
+              ss >> token;
+
+              // insert op into command operands
+              command->operands.push_back(token);
+            }
           }
         }
       }
     }
-  }
 
-  // for (int i = 0; i < TS.size(); i++)
-  //   cout << "Symbol: " << TS[i]->getSymbol() << "; Value: " << TS[i]->getValue() << endl;
+    if (textStarted)
+      textSection.push_back(command);
+    
+    else if (dataStarted)
+      dataSection.push_back(command);
+  }
 
   // close file
   sourceFile.close();
 }
 
+void Assembler::printTS() {
+  for (auto symbol:TS)
+    cout << "Symbol: " << symbol->getSymbol() << "; Value: " << symbol->getValue() << endl;
+}
+
+void Assembler::printTextSection() {
+  for (auto command:textSection) {
+    cout << "Label: " << command->label << ", operation: " << command->operation << ", operands(" << command->operands.size() << "): ";
+    
+    for (auto operand:command->operands) {
+      cout << operand << " ";
+    }
+
+    cout << endl;
+  }
+}
+
+void Assembler::printDataSection() {
+  for (auto command:dataSection) {
+    cout << "Label: " << command->label << ", operation: " << command->operation << ", operands(" << command->operands.size() << "): ";
+    
+    for (auto operand:command->operands) {
+      cout << operand << " ";
+    }
+
+    cout << endl;
+  }
+}
+
 void Assembler::secondPassage() {
-  ifstream inputFile("processed/" + sourceName + ".mcr");
   ofstream outputFile("processed/" + sourceName + ".o");
-
-  // copy file content to string
-  vector<string> intermediateCode;
-  string line;
-
-  while (getline(sourceFile, line))
-    intermediateCode.push_back(line);
 
   int positionCounter = 0;
 
-  inputFile.close();
+  for (auto command:textSection) {
+    // output opcode
+    for (int i = 1; i <= 14; i++) {
+      if (IT[i]->mnemonic == command->operation) {
+        outputFile << IT[i]->opcode;
+        // outputFile << IT[i]->mnemonic;
+        outputFile << " ";
+      }
+    }
+
+    // for each operand
+    for (auto operand:command->operands) {
+    
+      // if operand is a symbol
+      for (auto symbol:TS) {
+        if (symbol->getSymbol() == operand) {
+          // outputFile << symbol->getSymbol();
+          outputFile << symbol->getValue();
+          outputFile << " ";
+        }
+      }
+    }
+
+    outputFile << endl;
+  }
+
   outputFile.close();
 }
 

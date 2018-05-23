@@ -10,7 +10,8 @@ using namespace std;
 
 class Command {
   public:
-    string label, operation, op1, op2;
+    string label, operation;
+    vector<string> operands;
 };
 
 class Assembler {
@@ -18,7 +19,11 @@ class Assembler {
     Assembler(string sourceName);
     
     void buildIT();
+
     void printIT();
+    void printTS();
+    void printTextSection();
+    void printDataSection();
 
     void firstPassage();
     void secondPassage();
@@ -30,4 +35,6 @@ class Assembler {
     string sourceName;
 
     vector<Symbol *> TS;
+    vector<Command *> textSection;
+    vector<Command *> dataSection;
 };
