@@ -75,8 +75,8 @@ bool PreProcessor::getEQU(string line) {
     value.erase(value.find("EQU"), value.find("EQU") + 3);
 
     if (isDefined(symbol)) {
-      cout << "Semantic error: symbol " << symbol << " already defined" << endl;
-      exit(0);
+      cout << "\033[1;31merror:\033[0m symbol " << symbol << " already defined" << endl;
+      return false;
     } else {
       equList.push_back(new Symbol(symbol, value));
     }
@@ -101,8 +101,8 @@ bool PreProcessor::getIF(string line) {
     string value = removeWhiteSpace(aux[1]);
 
     if (!isDefined(value)) {
-      cout << "Semantic error: symbol " << value << " not defined" << endl;
-      exit(0);
+      cout << "\033[1;31merror:\033[0m symbol " << value << " not defined" << endl;
+      return false;
     } else {
       ifList.push_back(new Symbol(symbol, value));
     }
@@ -172,7 +172,7 @@ void PreProcessor::processFile() {
 
   for (int i = 0; i < intermediateCode.size(); i++) {
     line = intermediateCode[i];
-    
+
     if (!blocked) {
       newLine = toUpper(line);
       newLine = removeComment(newLine);

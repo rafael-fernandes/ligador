@@ -1,3 +1,6 @@
+#ifndef INSTRUCTIONS_H
+#define INSTRUCTIONS_H
+
 #include <iostream>
 #include <string>
 
@@ -10,3 +13,5 @@ class Instruction {
     string mnemonic, opcode;
     int operands, length;
 };
+
+#endif

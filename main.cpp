@@ -3,8 +3,7 @@
 #include "include/macro-processor.hpp"
 #include "include/assembler.hpp"
 #include "include/program.hpp"
-
-Program * program = new Program();
+#include "include/error_checker.hpp"
 
 int main(int argc, char ** argv) {
   // input: ./prog -[p|m|c] sourceFileName targetFileName
@@ -12,6 +11,9 @@ int main(int argc, char ** argv) {
   string flag(argv[1]);
   string source(argv[2]);
   string target(argv[3]);
+
+  ErrorChecker * errorChecker = new ErrorChecker(source, target);
+  errorChecker->check();
 
   PreProcessor * preProcessor = new PreProcessor(source, target);
   MacroProcessor * macroProcessor = new MacroProcessor(source, target);
