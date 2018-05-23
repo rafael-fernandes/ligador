@@ -1,5 +1,16 @@
 #include "../include/assembler.hpp"
 
+std::string replaceAll(std::string str, const std::string& from, const std::string& to) {
+  size_t start_pos = 0;
+ 
+  while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+      str.replace(start_pos, from.length(), to);
+      start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+  }
+
+  return str;
+}
+
 void Assembler::buildIT() {
   IT[1] = new Instruction("ADD", "01", 1, 2);
   IT[2] = new Instruction("SUB", "02", 1, 2);
@@ -131,7 +142,24 @@ void Assembler::firstPassage() {
 
               // get CONST value
               ss >> token;
-              
+
+              if (token.size() >= 2) {
+                if (token[0] == '-' || (token[0] == '0' && token[1] == 'X'))
+                  token = replaceAll(token, "0X", "");
+                
+                stringstream stream;
+
+                int number;
+                stringstream(token) >> number;
+
+                stream << token;
+                stream >> hex >> number;
+                
+                token = to_string(number);
+              }
+
+              // cout << token << endl;
+
               command->operands.push_back(token);
             }
 

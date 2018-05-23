@@ -1,0 +1,4 @@
+Line 0:
+MULT N
+STORE N
+
