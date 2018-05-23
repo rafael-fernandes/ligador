@@ -23,8 +23,9 @@ MacroName::MacroName() {};
 MacroDefinition::MacroDefinition() {};
 
 // macroProcessor constructor
-MacroProcessor::MacroProcessor(string sourceName) {
-  this->sourceName = sourceName;
+MacroProcessor::MacroProcessor(string source, string target) {
+  this->sourceFileName = source;
+  this->targetFileName = target;
   macroDefinitionCounter = 0;
 
   for (int i = 0; i < 100; i++)
@@ -36,7 +37,7 @@ vector<string> MacroProcessor::getMacros() {
   // new source without MACRO
   vector<string> newSource;
 
-  ifstream sourceFile("processed/" + sourceName + ".pre");
+  ifstream sourceFile("processed/" + targetFileName + ".pre");
 
   // copy file content to string
   vector<string> intermediateCode;
@@ -235,7 +236,7 @@ void MacroProcessor::expandMDT() {
 }
 
 void MacroProcessor::expandMacroCalls(vector<string> source) {
-  ofstream output("processed/" + sourceName + ".mcr");
+  ofstream output("processed/" + targetFileName + ".mcr");
   vector<string> outputCode;
   bool found = false;
 

@@ -17,8 +17,9 @@ void Assembler::buildIT() {
   IT[14] = new Instruction("STOP", "14", 0, 1);
 }
 
-Assembler::Assembler(string sourceName) {
-  this->sourceName = sourceName;
+Assembler::Assembler(string source, string target) {
+  this->sourceFileName = source;
+  this->targetFileName = target;
 
   buildIT();
 }
@@ -30,7 +31,7 @@ void Assembler::printIT() {
 }
 
 void Assembler::firstPassage() {
-  ifstream sourceFile("processed/" + sourceName + ".mcr");
+  ifstream sourceFile("processed/" + targetFileName + ".mcr");
 
   // copy file content to string
   vector<string> intermediateCode;
@@ -213,9 +214,7 @@ void Assembler::printDataSection() {
 }
 
 void Assembler::secondPassage() {
-  ofstream outputFile("processed/" + sourceName + ".o");
-
-  int positionCounter = 0;
+  ofstream outputFile("processed/" + targetFileName + ".o");
 
   for (auto command:textSection) {
     // output opcode
@@ -240,7 +239,18 @@ void Assembler::secondPassage() {
       }
     }
 
-    outputFile << endl;
+    // outputFile << endl;
+  }
+
+  for (auto command:dataSection) {
+    if (command->operation == "SPACE")
+      for (int i = 0; i <= command->operands.size(); i++)
+        outputFile << "00 ";
+    
+    if (command->operation == "CONST")
+      outputFile << command->operands[0] << " ";
+    
+    // outputFile << endl;
   }
 
   outputFile.close();

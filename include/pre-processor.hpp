@@ -11,7 +11,7 @@ using namespace std;
 
 class PreProcessor {
   public:
-    PreProcessor(string file);
+    PreProcessor(string source, string target);
     void processFile();
     
     string toUpper(string line);
@@ -27,6 +27,8 @@ class PreProcessor {
     bool getIF(string line);
     bool evaluateIF();
     void listIF();
+
+    string sourceFileName, targetFileName;
 
   private:
     ifstream source;

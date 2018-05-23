@@ -1,14 +1,8 @@
 #include "../include/pre-processor.hpp"
 
-PreProcessor::PreProcessor(string file) {
-  source.open(file + ".asm");
-
-  if (!source.good()) {
-    cout << "Error opening file: " << file << endl;
-    exit(1);
-  }
-
-  processedSource.open("processed/" + file + ".pre");
+PreProcessor::PreProcessor(string source, string target) {
+  this->sourceFileName = source;
+  this->targetFileName = target;
 }
 
 string PreProcessor::toUpper(string line) {
@@ -163,10 +157,22 @@ void PreProcessor::listIF() {
 }
 
 void PreProcessor::processFile() {
+  this->source.open(sourceFileName + ".asm");
+
+  processedSource.open("processed/" + targetFileName + ".pre");
+
   string line, newLine;
   bool blocked = false;
 
-  while(getline(source, line)) {
+  // copy file content to string
+  vector<string> intermediateCode;
+
+  while (getline(source, line))
+    intermediateCode.push_back(line);
+
+  for (int i = 0; i < intermediateCode.size(); i++) {
+    line = intermediateCode[i];
+    
     if (!blocked) {
       newLine = toUpper(line);
       newLine = removeComment(newLine);

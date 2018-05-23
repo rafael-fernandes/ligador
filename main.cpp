@@ -2,15 +2,35 @@
 #include "include/pre-processor.hpp"
 #include "include/macro-processor.hpp"
 #include "include/assembler.hpp"
+#include "include/program.hpp"
 
-int main() {
-  PreProcessor * preProcessor = new PreProcessor("teste2");
-  MacroProcessor * macroProcessor = new MacroProcessor("teste2");
-  Assembler * assembler = new Assembler("teste2");
+Program * program = new Program();
 
-  preProcessor->processFile();
-  macroProcessor->processFile();
-  assembler->processFile();
+int main(int argc, char ** argv) {
+  // input: ./prog -[p|m|c] sourceFileName targetFileName
+
+  string flag(argv[1]);
+  string source(argv[2]);
+  string target(argv[3]);
+
+  PreProcessor * preProcessor = new PreProcessor(source, target);
+  MacroProcessor * macroProcessor = new MacroProcessor(source, target);
+  Assembler * assembler = new Assembler(source, target);
+
+  if (flag == "-p") {
+    preProcessor->processFile();
+  }
+
+  else if (flag == "-m") {
+    preProcessor->processFile();
+    macroProcessor->processFile();
+  }
+
+  else if (flag == "-o") {
+    preProcessor->processFile();
+    macroProcessor->processFile();
+    assembler->processFile();
+  }
 
   return 0;
 }

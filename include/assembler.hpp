@@ -5,18 +5,13 @@
 #include <sstream>
 #include "../include/instructions.hpp"
 #include "../include/symbol.hpp"
+#include "../include/command.hpp"
 
 using namespace std;
 
-class Command {
-  public:
-    string label, operation;
-    vector<string> operands;
-};
-
 class Assembler {
   public:
-    Assembler(string sourceName);
+    Assembler(string source, string target);
     
     void buildIT();
 
@@ -30,9 +25,10 @@ class Assembler {
 
     void processFile();
 
+    string sourceFileName, targetFileName;
+
   private:
     Instruction * IT[15];
-    string sourceName;
 
     vector<Symbol *> TS;
     vector<Command *> textSection;

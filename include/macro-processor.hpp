@@ -71,7 +71,7 @@ int inline MacroName::getIndex() {
 
 class MacroProcessor {
   public:
-    MacroProcessor(string file);
+    MacroProcessor(string source, string target);
 
     vector<string> getMacros();
     void expandMDT();
@@ -90,9 +90,9 @@ class MacroProcessor {
     void printMNT();
     void printMDT();
 
-  private:
-    string sourceName;
+    string sourceFileName, targetFileName;
 
+  private:
     ifstream source;
     ofstream processedSource;
 
