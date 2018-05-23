@@ -1,6 +1,7 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
+#include <algorithm>
 #include <iostream>
 
 using namespace std;

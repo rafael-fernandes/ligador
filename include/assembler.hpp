@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <algorithm>
 #include "../include/instructions.hpp"
 #include "../include/symbol.hpp"
 #include "../include/command.hpp"

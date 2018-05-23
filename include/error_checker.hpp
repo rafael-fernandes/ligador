@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <sstream>
 #include "../include/symbol.hpp"
 #include "../include/instructions.hpp"

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <algorithm>
 #include <regex>
 
 using namespace std;
