@@ -49,7 +49,7 @@ void ErrorChecker::check() {
 
     // ERROR: line has 2 labels
     if (count(line.begin(), line.end(), ':') > 1)
-      cout << "Line: " << i << ", \033[1;31merror:\033[0m line has more than 1 label" << endl;
+      cout << "Line: " << i + 1 << ", \033[1;31msintatic error:\033[0m line has more than 1 label" << endl;
 
     stringstream ss(line);
     string token;
@@ -60,13 +60,13 @@ void ErrorChecker::check() {
         if (ss >> token) {
           // ERROR: invalid section
           if (token != "TEXT" && token != "DATA") {
-            cout << "Line: " << i << ", \033[1;31merror:\033[0m invalid section" << endl;
+            cout << "Line: " << i + 1 << ", \033[1;31msintatic error:\033[0m invalid section" << endl;
           }
         }
 
         // ERROR: empty section
         else
-          cout << "Line: " << i << ", \033[1;31merror:\033[0m empty section" << endl;
+          cout << "Line: " << i + 1 << ", \033[1;31msintatic error:\033[0m empty section" << endl;
       }
 
       // token is a label
@@ -80,17 +80,17 @@ void ErrorChecker::check() {
 
         // ERROR: label has more than 20 characters
         if (token.size() > 20) {
-          cout << "Line: " << i << ", \033[1;31merror:\033[0m token " << token << " has more than 20 characters" << endl;
+          cout << "Line: " << i + 1 << ", \033[1;31mlexic error:\033[0m token " << token << " has more than 20 characters" << endl;
         }
 
         // ERROR: label has number as first character
         if ('0' <= token[0] && token[0] <= '9') {
-          cout << "Line: " << i << ", \033[1;31merror:\033[0m token " << token << " begin with a number" << endl;
+          cout << "Line: " << i + 1 << ", \033[1;31mlexic error:\033[0m token " << token << " begin with a number" << endl;
         }
 
         // ERROR: label character that is not A-Z or _
         if (!('0' <= token[0] && token[0] <= '9') && token.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789") != -1) {
-          cout << "Line: " << i << ", \033[1;31merror:\033[0m token " << token << " has invalid character" << endl;
+          cout << "Line: " << i + 1 << ", \033[1;31mlexic error:\033[0m token " << token << " has invalid character" << endl;
         }
       }
     }

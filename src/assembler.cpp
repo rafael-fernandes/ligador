@@ -68,6 +68,9 @@ void Assembler::firstPassage() {
     }
     
     if (line.find("SECTION DATA") != -1) {
+      if (!textStarted)
+        cout << "\033[1;31msemantic error:\033[0m SECTION DATA needs to come after SECTION TEXT" << endl;
+
       textStarted = false;
       dataStarted = true;
       continue;
@@ -97,7 +100,7 @@ void Assembler::firstPassage() {
         for (auto symbol:TS) {
           // if symbol is already defined
           if (symbol->getSymbol() == command->label) {
-            cout << "Error: symbol " << command->label << "redefined" << endl;
+            cout << "\033[1;31msemantic error:\033[0m symbol " << command->label << " redefined" << endl;
             symbolDefined = true;
           }
         }
@@ -126,10 +129,10 @@ void Assembler::firstPassage() {
               // get op1 and/or op2
               for (int k = 0; k < IT[j]->operands; k++) {
                 // get op
-                ss >> token;
-
-                // insert op into command operands
-                command->operands.push_back(token);
+                if (ss >> token) {
+                  // insert op into command operands
+                  command->operands.push_back(token);
+                }
               }
             }
           }
@@ -174,6 +177,10 @@ void Assembler::firstPassage() {
                 positionCounter += 1;
               }
             }
+
+            else {
+              cout << "\033[1;31msintatic error:\033[0m invalid directive " << command->operation << endl;
+            }
           }
         }
       }
@@ -191,21 +198,47 @@ void Assembler::firstPassage() {
             // get op1 and/or op2
             for (int k = 0; k < IT[j]->operands; k++) {
               // get op
-              ss >> token;
-
-              // insert op into command operands
-              command->operands.push_back(token);
+              if (ss >> token) {
+                // insert op into command operands
+                command->operands.push_back(token);
+              }
             }
           }
+        }
+
+        bool directiveFound = false;
+
+        if (!instructionFound) {
+          if (command->operation == "SPACE" || command->operation == "CONST") {
+            cout << "\033[1;31msintatic error:\033[0m missing label for " << command->operation << endl;
+            directiveFound = true;
+          }
+        }
+
+        if (!directiveFound && !instructionFound) {
+          cout << "\033[1;31msemantic error:\033[0m invalid instruction " << command->operation << endl;
         }
       }
     }
 
-    if (textStarted)
+    if (textStarted) {
+      if (command->operation == "CONST" || command->operation == "SPACE")
+        cout << "\033[1;31msemantic error:\033[0m directive " << command->operation << " at label " << command->label << " in wrong section" << endl;
+      
       textSection.push_back(command);
+    }
+
+    if (i == 0 && !textStarted) {
+      cout << "\033[1;31msemantic error:\033[0m missing SECTION TEXT" << endl;
+    }
     
-    else if (dataStarted)
+    else if (dataStarted) {
+      for (int j = 1; j <= 14; j++)
+        if (IT[j]->mnemonic == command->operation)
+          cout << "\033[1;31msemantic error:\033[0m instruction " << command->operation << " at label " << command->label << " in wrong section" << endl;
+
       dataSection.push_back(command);
+    }
   }
 
   // close file
@@ -245,9 +278,46 @@ void Assembler::secondPassage() {
   ofstream outputFile("processed/" + targetFileName + ".o");
 
   for (auto command:textSection) {
+    if (command->operation == "DIV") {
+      for (auto operand:command->operands) {
+        for (auto data:dataSection) {
+          if (data->label == operand) {
+            for (auto dataOperand:data->operands) {
+              if (dataOperand == "0")
+                cout << "\033[1;31msemantic error:\033[0m division by 0" << endl;
+            }
+          }
+        }
+      }
+    }
+
+    bool jmpOperandFound = false;
+
+    if (command->operation == "JMP" || command->operation == "JMPN" || command->operation == "JMPZ" || command->operation == "JMPP") {
+      for (auto operand:command->operands) {
+        for (auto command:textSection) {
+          if (command->label == operand)
+            jmpOperandFound = true;
+        }
+
+        for (auto data:dataSection) {
+          if (data->label == operand) {
+            cout << "\033[1;31msemantic error:\033[0m invalid jump to SECTION DATA" << endl;
+          }
+        }
+      }
+
+      if (!jmpOperandFound)
+        cout << "\033[1;31msemantic error:\033[0m invalid jump to missing label" << endl;
+    }
+
     // output opcode
     for (int i = 1; i <= 14; i++) {
       if (IT[i]->mnemonic == command->operation) {
+        if (IT[i]->operands != command->operands.size()) {
+          cout << "\033[1;31msintatic error:\033[0m wrong arguments number for " << command->operation << endl;
+        }
+
         outputFile << IT[i]->opcode;
         // outputFile << IT[i]->mnemonic;
         outputFile << " ";
@@ -256,7 +326,7 @@ void Assembler::secondPassage() {
 
     // for each operand
     for (auto operand:command->operands) {
-    
+      
       // if operand is a symbol
       for (auto symbol:TS) {
         if (symbol->getSymbol() == operand) {
@@ -286,5 +356,8 @@ void Assembler::secondPassage() {
 
 void Assembler::processFile() {
   firstPassage();
+  // printTextSection();
+  // printDataSection();
+  // printTS();
   secondPassage();
 }
