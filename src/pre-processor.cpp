@@ -1,5 +1,16 @@
 #include "../include/pre-processor.hpp"
 
+std::string replaceA(std::string str, const std::string& from, const std::string& to) {
+  size_t start_pos = 0;
+ 
+  while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+      str.replace(start_pos, from.length(), to);
+      start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+  }
+
+  return str;
+}
+
 PreProcessor::PreProcessor(string source, string target) {
   this->sourceFileName = source;
   this->targetFileName = target;
@@ -181,6 +192,13 @@ void PreProcessor::processFile() {
       if (!getEQU(newLine)) {
         if (!getIF(newLine)) {
           newLine = translateEQU(newLine);
+
+          if (newLine.find("COPY") != -1) {
+            newLine = replaceA(newLine, "COPY", "");
+            newLine = replaceA(newLine, " ", "");
+            newLine.insert(0, "COPY ");
+          }
+
           processedSource << newLine << endl;
         } else {
           blocked = evaluateIF();
