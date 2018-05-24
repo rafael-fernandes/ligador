@@ -362,8 +362,8 @@ void Assembler::secondPassage() {
 
 void Assembler::processFile() {
   firstPassage();
-  printTextSection();
-  printDataSection();
-  printTS();
+  // printTextSection();
+  // printDataSection();
+  // printTS();
   secondPassage();
 }
