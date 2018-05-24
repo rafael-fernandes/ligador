@@ -278,6 +278,12 @@ void Assembler::secondPassage() {
   ofstream outputFile("processed/" + targetFileName + ".o");
 
   for (auto command:textSection) {
+    if (command->operation == "STORE")
+      for (auto operand:command->operands)
+        for (auto data:dataSection)
+          if (data->label == operand && data->operation == "CONST")
+            cout << "\033[1;31msemantic error:\033[0m STORE modifies CONST value " << data->label << endl;
+    
     if (command->operation == "DIV") {
       for (auto operand:command->operands) {
         for (auto data:dataSection) {
@@ -356,8 +362,8 @@ void Assembler::secondPassage() {
 
 void Assembler::processFile() {
   firstPassage();
-  // printTextSection();
-  // printDataSection();
-  // printTS();
+  printTextSection();
+  printDataSection();
+  printTS();
   secondPassage();
 }

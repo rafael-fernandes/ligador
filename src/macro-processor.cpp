@@ -89,6 +89,10 @@ vector<string> MacroProcessor::getMacros() {
         }
       }
 
+      if (argsVector.size() > 4) {
+        cout << "\033[1;31msintatic error:\033[0m MACRO " << name << " must have up to 4 args" << endl;
+      }
+
       // create new MACRO name
       macroName = new MacroName();
       
