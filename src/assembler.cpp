@@ -126,12 +126,24 @@ void Assembler::firstPassage() {
               positionCounter += IT[j]->length;
               instructionFound = true;
 
-              // get op1 and/or op2
-              for (int k = 0; k < IT[j]->operands; k++) {
-                // get op
-                if (ss >> token) {
-                  // insert op into command operands
-                  command->operands.push_back(token);
+              if (command->operation == "COPY") {
+                string args, newToken;
+                ss >> args;
+                args = replaceAll(args, ",", " ");
+                stringstream css(args);
+
+                for (int k = 0; k < IT[j]->operands; k++) {
+                  if (css >> newToken)
+                    command->operands.push_back(newToken);
+                }
+              } else {
+                // get op1 and/or op2
+                for (int k = 0; k < IT[j]->operands; k++) {
+                  // get op
+                  if (ss >> token) {
+                    // insert op into command operands
+                    command->operands.push_back(token);
+                  }
                 }
               }
             }
@@ -195,12 +207,24 @@ void Assembler::firstPassage() {
             positionCounter += IT[j]->length;
             instructionFound = true;
 
-            // get op1 and/or op2
-            for (int k = 0; k < IT[j]->operands; k++) {
-              // get op
-              if (ss >> token) {
-                // insert op into command operands
-                command->operands.push_back(token);
+            if (command->operation == "COPY") {
+              string args, newToken;
+              ss >> args;
+              args = replaceAll(args, ",", " ");
+              stringstream css(args);
+
+              for (int k = 0; k < IT[j]->operands; k++) {
+                if (css >> newToken)
+                  command->operands.push_back(newToken);
+              }
+            } else {
+              // get op1 and/or op2
+              for (int k = 0; k < IT[j]->operands; k++) {
+                // get op
+                if (ss >> token) {
+                  // insert op into command operands
+                  command->operands.push_back(token);
+                }
               }
             }
           }
