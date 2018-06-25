@@ -18,6 +18,8 @@ class Assembler {
 
     void printIT();
     void printTS();
+    void printTU();
+    void printTD();
     void printTextSection();
     void printDataSection();
 
@@ -32,6 +34,8 @@ class Assembler {
     Instruction * IT[15];
 
     vector<Symbol *> TS;
+    vector<Symbol *> TU;
+    vector<Symbol *> TD;
     vector<Command *> textSection;
     vector<Command *> dataSection;
 };

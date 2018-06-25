@@ -190,6 +190,23 @@ void Assembler::firstPassage() {
               }
             }
 
+            // if operation is directive BEGIN
+            else if (command->operation == "BEGIN") {
+              
+            }
+
+            // if operation is directive EXTERN
+            else if (command->operation == "EXTERN") {
+              // create symbol
+              Symbol * symbol = new Symbol();
+
+              symbol->setSymbol(command->label);
+              symbol->setValue("0");
+
+              // insert symbol into use table
+              this->TU.push_back(symbol);
+            }
+ 
             else {
               cout << "\033[1;31msintatic error:\033[0m invalid directive " << command->operation << endl;
             }
@@ -233,7 +250,7 @@ void Assembler::firstPassage() {
         bool directiveFound = false;
 
         if (!instructionFound) {
-          if (command->operation == "SPACE" || command->operation == "CONST") {
+          if (command->operation == "SPACE" || command->operation == "CONST" || command->operation == "BEGIN") {
             cout << "\033[1;31msintatic error:\033[0m missing label for " << command->operation << endl;
             directiveFound = true;
           }
@@ -246,15 +263,15 @@ void Assembler::firstPassage() {
     }
 
     if (textStarted) {
-      if (command->operation == "CONST" || command->operation == "SPACE")
+      if (command->operation == "CONST" || command->operation == "SPACE" || command->operation == "BEGIN")
         cout << "\033[1;31msemantic error:\033[0m directive " << command->operation << " at label " << command->label << " in wrong section" << endl;
       
       textSection.push_back(command);
     }
 
-    if (i == 0 && !textStarted) {
-      cout << "\033[1;31msemantic error:\033[0m missing SECTION TEXT" << endl;
-    }
+    // if (i == 0 && !textStarted) {
+    //   cout << "\033[1;31msemantic error:\033[0m missing SECTION TEXT" << endl;
+    // }
     
     else if (dataStarted) {
       for (int j = 1; j <= 14; j++)
@@ -270,11 +287,29 @@ void Assembler::firstPassage() {
 }
 
 void Assembler::printTS() {
+  cout << "SYMBOL TABLE" << endl;
+
   for (auto symbol:TS)
     cout << "Symbol: " << symbol->getSymbol() << "; Value: " << symbol->getValue() << endl;
 }
 
+void Assembler::printTU() {
+  cout << "USE TABLE" << endl;
+
+  for (auto symbol:TU)
+    cout << "Symbol: " << symbol->getSymbol() << "; Value: " << symbol->getValue() << endl;
+}
+
+void Assembler::printTD() {
+  cout << "DEFINITION TABLE" << endl;
+
+  for (auto symbol:TD)
+    cout << "Symbol: " << symbol->getSymbol() << "; Value: " << symbol->getValue() << endl;
+}
+
 void Assembler::printTextSection() {
+  cout << "TEXT SECTION" << endl;
+  
   for (auto command:textSection) {
     cout << "Label: " << command->label << ", operation: " << command->operation << ", operands(" << command->operands.size() << "): ";
     
@@ -287,6 +322,8 @@ void Assembler::printTextSection() {
 }
 
 void Assembler::printDataSection() {
+  cout << "DATA SECTION" << endl;
+
   for (auto command:dataSection) {
     cout << "Label: " << command->label << ", operation: " << command->operation << ", operands(" << command->operands.size() << "): ";
     
@@ -386,8 +423,9 @@ void Assembler::secondPassage() {
 
 void Assembler::processFile() {
   firstPassage();
-  // printTextSection();
-  // printDataSection();
-  // printTS();
+  printTextSection();
+  printDataSection();
+  printTS();
+  printTU();
   secondPassage();
 }
