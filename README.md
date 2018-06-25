@@ -1,4 +1,4 @@
-## Trabalho 1 de Software Básico - 1º/2018
+## Trabalho 2 de Software Básico - 1º/2018
 
 **Aluno:** Rafael Alves Fernandes
 
@@ -8,7 +8,7 @@
 
 #### Problema
 
-Implementar um Macro-Assembler em C/C++ para a linguagem Assembly hipotética vista em sala de aula.
+Modificar o Macro-Assembler em C/C++ para a linguagem Assembly hipotética vista em sala de aula para aceitar módulos e fazer a correta ligação dos mesmos.
 
 ---
 
@@ -66,19 +66,15 @@ Para compilar o programa, execute:
 make
 ```
 
-O programa pode executar em 3 modos:
-
-- `-p`: pré-processamento, processa os `EQU` e `IF` e gera somente a saída `.pre`
-- `-m`: processamento de macros, processa as MACROS e gera a saída `.mcr`
-- `-o`: montagem, monta o programa de entrada e gera somente a saída `.o` para simulação
-
-Para executar o programa, execute:
+O programa pode aceitar até dois programas de entrada:
 
 ```
-./bin/main -[p|m|o] arquivoDeEntrada arquivoDeSaida
+./bin/main prog1 prog2
 ```
 
-Lembre-se que o nome do arquivo de entrada e saída não devem possuir extensão.
+Caso haja 2 programas de entrada, a ligação será feita automaticamente.
+
+Lembre-se que o nome do arquivo de entrada não deve possuir extensão.
 
 ---
 
