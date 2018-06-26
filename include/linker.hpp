@@ -19,6 +19,11 @@ class Linker {
 
     void linkObjects();
 
+    int correctionFactor;
+    ifstream modACode, modBCode;
+
+    vector<string> intermediateObjectA, intermediateObjectB;
+
   private:
     Instruction * IT[15];
 

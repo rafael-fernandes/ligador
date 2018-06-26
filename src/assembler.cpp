@@ -491,9 +491,10 @@ void Assembler::secondPassage() {
 
   if (this->module) {
     // object size
-    outputFile << "H: " << textObject.size() << endl;
+    outputFile << "H: " << textObject.size() - 1<< endl;
     // object use table
     outputFile << "H: ";
+    outputFile << TU.size() << " ";
 
     for (auto symbol:TU)
       outputFile << symbol->getSymbol() << " " << symbol->getValue() << " ";
@@ -502,6 +503,7 @@ void Assembler::secondPassage() {
 
     // object definition table
     outputFile << "H: ";
+    outputFile << TD.size() << " ";
 
     for (auto symbol:TD)
       outputFile << symbol->getSymbol() << " " << symbol->getValue() << " ";
@@ -520,10 +522,10 @@ void Assembler::secondPassage() {
 
 void Assembler::processFile() {
   firstPassage();
-  printTextSection();
-  printDataSection();
-  printTS();
-  printTD();
+  // printTextSection();
+  // printDataSection();
+  // printTS();
+  // printTD();
   secondPassage();
-  printTU();
+  // printTU();
 }
