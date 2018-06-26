@@ -370,7 +370,10 @@ void Assembler::printDataSection() {
 
 void Assembler::secondPassage() {
   int positionCounter = 0;
+  
   vector<string> textObject;
+
+  ofstream linkerTmp("tmp/linker_" + targetFileName + ".txt");
   ofstream outputFile("processed/" + targetFileName + ".o");
 
   if (this->module) {
@@ -443,6 +446,7 @@ void Assembler::secondPassage() {
               // outputFile << symbol->getSymbol();
               // outputFile << symbol->getValue();
               textObject.push_back(symbol->getValue());
+              linkerTmp << textObject.size() - 1 << endl;
               // outputFile << " ";
 
               // if symbol is extern
@@ -491,7 +495,7 @@ void Assembler::secondPassage() {
 
   if (this->module) {
     // object size
-    outputFile << "H: " << textObject.size() - 1<< endl;
+    outputFile << "H: " << textObject.size() - 1 << endl;
     // object use table
     outputFile << "H: ";
     outputFile << TU.size() << " ";
@@ -517,6 +521,7 @@ void Assembler::secondPassage() {
   for (auto code:textObject)
     outputFile << code << " ";
 
+  linkerTmp.close();
   outputFile.close();
 }
 

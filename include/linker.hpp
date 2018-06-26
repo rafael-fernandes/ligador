@@ -19,13 +19,15 @@ class Linker {
 
     void linkObjects();
 
+    int instructionOffset(string);
+    Instruction * IT[15];
+
     int correctionFactor;
     ifstream modACode, modBCode;
+    ifstream linkerTmpModA, linkerTmpModB;
 
     vector<string> intermediateObjectA, intermediateObjectB;
 
   private:
-    Instruction * IT[15];
-
     vector<Symbol *> TGD;
 };

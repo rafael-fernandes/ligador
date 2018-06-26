@@ -21,6 +21,9 @@ Linker::Linker(string modA, string modB) {
   modACode.open("processed/" + modA + ".o");
   modBCode.open("processed/" + modB + ".o");
 
+  linkerTmpModA.open("tmp/linker_" + modA + ".txt");
+  linkerTmpModB.open("tmp/linker_" + modB + ".txt");
+
   buildIT();
 }
 
@@ -100,14 +103,21 @@ void Linker::printTGD() {
     cout << "Symbol: " << symbol->getSymbol() << "; Value: " << symbol->getValue() << endl;
 }
 
+int Linker::instructionOffset(string code) {
+  int aux = stoi(code);
+
+  return IT[aux]->operands;
+}
+
 void Linker::linkObjects() {
   ofstream outputFile("processed/object.o");
 
   buildTGD();
-  printTGD();
+  // printTGD();
 
   vector<string> textA;
   vector<string> textB;
+  vector<int> replaced;
 
   string line, token, aux;
 
@@ -120,12 +130,6 @@ void Linker::linkObjects() {
   while(ssTextA >> token)
     textA.push_back(token);
 
-  // print text mod A
-  for (auto code:textA)
-    cout << code << " ";
-
-  cout << endl;
-
   // get text mod B
   stringstream ssTextB(intermediateObjectB[4]);
 
@@ -135,14 +139,10 @@ void Linker::linkObjects() {
   while(ssTextB >> token)
     textB.push_back(token);
 
-  // print text mod B
-  for (auto code:textB)
-    cout << code << " ";
-
-  cout << endl;
+  /* ---------------------------------------- */
+  // Replace Use Tables values of mod A
 
   // get TUA symbols count
-  // cout << intermediateObjectA[2] << endl;
   stringstream ssTUA(intermediateObjectA[2]);
 
   // discard H:
@@ -157,17 +157,12 @@ void Linker::linkObjects() {
     ssTUA >> symbol;
     ssTUA >> value;
 
-    for (auto token:TGD) {
+    for (auto token:TGD)
       if (token->getSymbol() == symbol)
         textA[stoi(value)] = token->getValue();
-    }
   }
 
-  // print text mod A
-  for (auto code:textA)
-    cout << code << " ";
-
-  cout << endl;
+  // Replace Use Tables values of mod B
 
   // get TUB symbols count
   stringstream ssTUB(intermediateObjectB[2]);
@@ -185,15 +180,39 @@ void Linker::linkObjects() {
     ssTUB >> symbol;
     ssTUB >> value;
 
-    for (auto token:TGD) {
-      if (token->getSymbol() == symbol)
+    for (auto token:TGD)
+      if (token->getSymbol() == symbol) {
         textB[stoi(value)] = token->getValue();
-    }
+        replaced.push_back(stoi(value));
+      }
   }
 
-  // print text mod B
-  for (auto code:textB)
-    cout << code << " ";
+  /* ---------------------------------------- */
+  // Add correction factor to mod B
 
-  cout << endl;
+  int vAux;
+  bool indexReplaced = false;
+
+  while (getline(linkerTmpModB, line)) {
+    for (auto index:replaced) {
+      if (index == stoi(line))
+        indexReplaced = true; 
+    }
+
+    if (!indexReplaced) {
+      vAux = stoi(textB[stoi(line)]);
+      vAux += correctionFactor;
+      textB[stoi(line)] = to_string(vAux);
+    }
+
+    indexReplaced = false;
+  }
+
+  for (auto code:textA)
+    outputFile << code << " ";
+
+  for (auto code:textB)
+    outputFile << code << " ";
+
+  outputFile.close();
 }
