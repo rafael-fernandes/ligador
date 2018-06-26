@@ -306,6 +306,15 @@ void Assembler::firstPassage() {
     }
   }
 
+  // update TD
+  for (auto symbol:TS) {
+    for (auto definition:TD) {
+      if (definition->getSymbol() == symbol->getSymbol()) {
+        definition->setValue(symbol->getValue());
+      }
+    }
+  }
+
   // close file
   sourceFile.close();
 }
@@ -361,7 +370,12 @@ void Assembler::printDataSection() {
 
 void Assembler::secondPassage() {
   int positionCounter = 0;
+  vector<string> textObject;
   ofstream outputFile("processed/" + targetFileName + ".o");
+
+  if (this->module) {
+    outputFile << "H: " << targetFileName << endl;
+  }
 
   for (auto command:textSection) {
     if (command->operation == "STORE")
@@ -410,10 +424,11 @@ void Assembler::secondPassage() {
           cout << "\033[1;31msintatic error:\033[0m wrong arguments number for " << command->operation << endl;
         }
 
-        outputFile << positionCounter << " ";
-        outputFile << IT[i]->opcode;
+        // outputFile << positionCounter << " ";
+        // outputFile << IT[i]->opcode;
+        textObject.push_back(IT[i]->opcode);
         // outputFile << IT[i]->mnemonic;
-        outputFile << " ";
+        // outputFile << " ";
 
         int offset = 1;
 
@@ -426,8 +441,9 @@ void Assembler::secondPassage() {
           for (auto symbol:TS) {
             if (symbol->getSymbol() == operand) {
               // outputFile << symbol->getSymbol();
-              outputFile << symbol->getValue();
-              outputFile << " ";
+              // outputFile << symbol->getValue();
+              textObject.push_back(symbol->getValue());
+              // outputFile << " ";
 
               // if symbol is extern
               if (symbol->externSymbol) {
@@ -450,26 +466,36 @@ void Assembler::secondPassage() {
       }
     }
 
-    outputFile << endl;
+    // outputFile << endl;
   }
 
   for (auto command:dataSection) {
     if (command->operation == "SPACE") {
       for (int i = 0; i <= command->operands.size(); i++) {
-        outputFile << positionCounter << " ";
-        outputFile << "00 ";
+        // outputFile << positionCounter << " ";
+        textObject.push_back("00");
+        // outputFile << "00 ";
         positionCounter += 1;
       }
     }
     
     if (command->operation == "CONST") {
-      outputFile << positionCounter << " ";
-      outputFile << command->operands[0] << " " << endl;
+      // outputFile << positionCounter << " ";
+      textObject.push_back(command->operands[0]);
+      // outputFile << command->operands[0] << " " << endl;
       positionCounter += 1;
     }
     
-    outputFile << endl;
+    // outputFile << endl;
   }
+
+  if (this->module) {
+    outputFile << "H: " << textObject.size() << endl;
+    outputFile << "H: ";
+  }
+
+  for (auto code:textObject)
+    outputFile << code << " ";
 
   outputFile.close();
 }
