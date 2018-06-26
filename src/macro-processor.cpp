@@ -23,9 +23,9 @@ MacroName::MacroName() {};
 MacroDefinition::MacroDefinition() {};
 
 // macroProcessor constructor
-MacroProcessor::MacroProcessor(string source, string target) {
+MacroProcessor::MacroProcessor(string source) {
   this->sourceFileName = source;
-  this->targetFileName = target;
+  this->targetFileName = source;
   macroDefinitionCounter = 0;
 
   for (int i = 0; i < 100; i++)

@@ -72,7 +72,7 @@ int inline MacroName::getIndex() {
 
 class MacroProcessor {
   public:
-    MacroProcessor(string source, string target);
+    MacroProcessor(string source);
 
     vector<string> getMacros();
     void expandMDT();

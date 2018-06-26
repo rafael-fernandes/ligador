@@ -11,7 +11,7 @@ using namespace std;
 
 class PreProcessor {
   public:
-    PreProcessor(string source, string target);
+    PreProcessor(string source);
     void processFile();
     
     string toUpper(string line);

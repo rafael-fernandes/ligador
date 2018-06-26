@@ -11,9 +11,9 @@ std::string replaceA(std::string str, const std::string& from, const std::string
   return str;
 }
 
-PreProcessor::PreProcessor(string source, string target) {
+PreProcessor::PreProcessor(string source) {
   this->sourceFileName = source;
-  this->targetFileName = target;
+  this->targetFileName = source;
 }
 
 string PreProcessor::toUpper(string line) {

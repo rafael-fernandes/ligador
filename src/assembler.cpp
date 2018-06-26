@@ -28,9 +28,9 @@ void Assembler::buildIT() {
   IT[14] = new Instruction("STOP", "14", 0, 1);
 }
 
-Assembler::Assembler(string source, string target) {
+Assembler::Assembler(string source) {
   this->sourceFileName = source;
-  this->targetFileName = target;
+  this->targetFileName = source;
 
   buildIT();
 }
@@ -54,6 +54,14 @@ void Assembler::firstPassage() {
   int positionCounter = 0;
 
   bool textStarted, dataStarted;
+
+  if (this->module) {
+    if (intermediateCode[0].find("BEGIN") == -1)
+      cout << "\033[1;31msemantic error:\033[0m BEGIN directive missing" << endl;
+    
+    if (intermediateCode[intermediateCode.size() - 1].find("END") == -1)
+      cout << "\033[1;31msemantic error:\033[0m END directive missing" << endl;
+  }
 
   // while there is source code
   for (int i = 0; i < intermediateCode.size(); i++) {
@@ -189,22 +197,24 @@ void Assembler::firstPassage() {
                 positionCounter += 1;
               }
             }
+            
+            else if (this->module) {
+              // if operation is directive BEGIN
+              if (command->operation == "BEGIN") {
+                
+              }
 
-            // if operation is directive BEGIN
-            else if (command->operation == "BEGIN") {
-              
-            }
+              // if operation is directive EXTERN
+              else if (command->operation == "EXTERN") {
+                // create symbol
+                Symbol * symbol = new Symbol();
 
-            // if operation is directive EXTERN
-            else if (command->operation == "EXTERN") {
-              // create symbol
-              Symbol * symbol = new Symbol();
+                symbol->setSymbol(command->label);
+                symbol->setValue("0");
 
-              symbol->setSymbol(command->label);
-              symbol->setValue("0");
-
-              // insert symbol into use table
-              this->TU.push_back(symbol);
+                // insert symbol into use table
+                this->TU.push_back(symbol);
+              }
             }
  
             else {
@@ -250,9 +260,18 @@ void Assembler::firstPassage() {
         bool directiveFound = false;
 
         if (!instructionFound) {
-          if (command->operation == "SPACE" || command->operation == "CONST" || command->operation == "BEGIN") {
+          if (command->operation == "SPACE" || command->operation == "CONST" || (this->module && command->operation == "BEGIN")) {
             cout << "\033[1;31msintatic error:\033[0m missing label for " << command->operation << endl;
             directiveFound = true;
+          }
+
+          if (this->module) {
+            if (command->operation == "END")
+              directiveFound = true;
+
+            if (command->operation == "PUBLIC") {
+              directiveFound = true;
+            }
           }
         }
 
@@ -263,15 +282,17 @@ void Assembler::firstPassage() {
     }
 
     if (textStarted) {
-      if (command->operation == "CONST" || command->operation == "SPACE" || command->operation == "BEGIN")
+      if (command->operation == "CONST" || command->operation == "SPACE")
         cout << "\033[1;31msemantic error:\033[0m directive " << command->operation << " at label " << command->label << " in wrong section" << endl;
       
       textSection.push_back(command);
     }
 
-    // if (i == 0 && !textStarted) {
-    //   cout << "\033[1;31msemantic error:\033[0m missing SECTION TEXT" << endl;
-    // }
+    if (!this->module) {
+      if (i == 0 && !textStarted) {
+        cout << "\033[1;31msemantic error:\033[0m missing SECTION TEXT" << endl;
+      }
+    }
     
     else if (dataStarted) {
       for (int j = 1; j <= 14; j++)

@@ -12,7 +12,7 @@ using namespace std;
 
 class Assembler {
   public:
-    Assembler(string source, string target);
+    Assembler(string source);
     
     void buildIT();
 
@@ -29,6 +29,8 @@ class Assembler {
     void processFile();
 
     string sourceFileName, targetFileName;
+
+    bool module;
 
   private:
     Instruction * IT[15];

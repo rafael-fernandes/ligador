@@ -1,6 +1,6 @@
 #include "../include/error_checker.hpp"
 
-ErrorChecker::ErrorChecker(string source, string target) {
+ErrorChecker::ErrorChecker(string source) {
   IT[1] = new Instruction("ADD", "01", 1, 2);
   IT[2] = new Instruction("SUB", "02", 1, 2);
   IT[3] = new Instruction("MULT", "03", 1, 2);
@@ -17,7 +17,7 @@ ErrorChecker::ErrorChecker(string source, string target) {
   IT[14] = new Instruction("STOP", "14", 0, 1);
 
   this->sourceFileName = source;
-  this->targetFileName = target;
+  this->targetFileName = source;
 };
 
 void ErrorChecker::check() {

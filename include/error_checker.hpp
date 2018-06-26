@@ -12,7 +12,7 @@ using namespace std;
 
 class ErrorChecker {
   public:
-    ErrorChecker(string source, string target);
+    ErrorChecker(string source);
 
     void check();
 
