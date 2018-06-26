@@ -7,7 +7,7 @@ SRC = src
 PROCESSED = processed
 TMP = tmp
 
-all: error_checker.o symbol.o assembler.o pre-processor.o macro-processor.o instructions.o main
+all: linker.o error_checker.o symbol.o assembler.o pre-processor.o macro-processor.o instructions.o main
 
 error_checker.o: $(SRC)/error_checker.cpp $(INCLUDE)/error_checker.hpp
 	$(CC) $(LIBS) -c $(SRC)/error_checker.cpp -I $(INCLUDE) -o $(OBJ)/error_checker.o
@@ -26,6 +26,9 @@ pre-processor.o: $(SRC)/pre-processor.cpp $(INCLUDE)/pre-processor.hpp
 
 instructions.o: $(SRC)/instructions.cpp $(INCLUDE)/instructions.hpp
 	$(CC) $(LIBS) -c $(SRC)/instructions.cpp -I $(INCLUDE) -o $(OBJ)/instructions.o
+
+linker.o: $(SRC)/linker.cpp $(INCLUDE)/linker.hpp
+	$(CC) $(LIBS) -c $(SRC)/linker.cpp -I $(INCLUDE) -o $(OBJ)/linker.o
 
 main:
 	$(CC) $(LIBS) main.cpp $(OBJ)/*.o -I $(INCLUDE) -o $(BIN)/main

@@ -490,8 +490,26 @@ void Assembler::secondPassage() {
   }
 
   if (this->module) {
+    // object size
     outputFile << "H: " << textObject.size() << endl;
+    // object use table
     outputFile << "H: ";
+
+    for (auto symbol:TU)
+      outputFile << symbol->getSymbol() << " " << symbol->getValue() << " ";
+    
+    outputFile << endl;
+
+    // object definition table
+    outputFile << "H: ";
+
+    for (auto symbol:TD)
+      outputFile << symbol->getSymbol() << " " << symbol->getValue() << " ";
+
+    outputFile << endl;
+    
+    // object text
+    outputFile << "T: ";
   }
 
   for (auto code:textObject)

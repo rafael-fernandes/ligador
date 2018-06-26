@@ -2,6 +2,7 @@
 #include "include/pre-processor.hpp"
 #include "include/macro-processor.hpp"
 #include "include/assembler.hpp"
+#include "include/linker.hpp"
 #include "include/error_checker.hpp"
 
 int main(int argc, char ** argv) {
@@ -58,6 +59,9 @@ int main(int argc, char ** argv) {
 
     assemblerModA->processFile();
     assemblerModB->processFile();
+
+    Linker * linker = new Linker(modA, modB);
+    linker->linkObjects();
   }
 
   return 0;
