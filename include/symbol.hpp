@@ -12,6 +12,8 @@ class Symbol {
     string value;
 
   public:
+    bool externSymbol;
+    
     Symbol();
     Symbol(string symbol, string value);
 

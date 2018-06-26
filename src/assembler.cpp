@@ -121,12 +121,20 @@ void Assembler::firstPassage() {
           symbol->setSymbol(command->label);
           symbol->setValue(to_string(positionCounter));
 
-          TS.push_back(symbol);
-
           // get next token
           ss >> token;
 
           command->operation = token;
+
+          if (command->operation == "EXTERN") {
+            symbol->externSymbol = true;
+          }
+
+          else {
+            symbol->externSymbol = false;
+          }
+
+          TS.push_back(symbol);
 
           // if operation is a instruction
           for (int j = 1; j <= 14; j++) {
@@ -199,22 +207,6 @@ void Assembler::firstPassage() {
             }
             
             else if (this->module) {
-              // if operation is directive BEGIN
-              if (command->operation == "BEGIN") {
-                
-              }
-
-              // if operation is directive EXTERN
-              else if (command->operation == "EXTERN") {
-                // create symbol
-                Symbol * symbol = new Symbol();
-
-                symbol->setSymbol(command->label);
-                symbol->setValue("0");
-
-                // insert symbol into use table
-                this->TU.push_back(symbol);
-              }
             }
  
             else {
@@ -270,6 +262,17 @@ void Assembler::firstPassage() {
               directiveFound = true;
 
             if (command->operation == "PUBLIC") {
+              ss >> token;
+              
+              // create symbol
+              Symbol * symbol = new Symbol();
+
+              symbol->setSymbol(token);
+              symbol->setValue("0");
+
+              // insert symbol into definition table
+              this->TD.push_back(symbol);
+
               directiveFound = true;
             }
           }
@@ -294,7 +297,7 @@ void Assembler::firstPassage() {
       }
     }
     
-    else if (dataStarted) {
+    else if (dataStarted && command->operation != "END") {
       for (int j = 1; j <= 14; j++)
         if (IT[j]->mnemonic == command->operation)
           cout << "\033[1;31msemantic error:\033[0m instruction " << command->operation << " at label " << command->label << " in wrong section" << endl;
@@ -311,7 +314,7 @@ void Assembler::printTS() {
   cout << "SYMBOL TABLE" << endl;
 
   for (auto symbol:TS)
-    cout << "Symbol: " << symbol->getSymbol() << "; Value: " << symbol->getValue() << endl;
+    cout << "Symbol: " << symbol->getSymbol() << "; Value: " << symbol->getValue() << "; Extern: " << symbol->externSymbol << endl;
 }
 
 void Assembler::printTU() {
@@ -357,6 +360,7 @@ void Assembler::printDataSection() {
 }
 
 void Assembler::secondPassage() {
+  int positionCounter = 0;
   ofstream outputFile("processed/" + targetFileName + ".o");
 
   for (auto command:textSection) {
@@ -406,37 +410,65 @@ void Assembler::secondPassage() {
           cout << "\033[1;31msintatic error:\033[0m wrong arguments number for " << command->operation << endl;
         }
 
+        outputFile << positionCounter << " ";
         outputFile << IT[i]->opcode;
         // outputFile << IT[i]->mnemonic;
         outputFile << " ";
-      }
-    }
 
-    // for each operand
-    for (auto operand:command->operands) {
-      
-      // if operand is a symbol
-      for (auto symbol:TS) {
-        if (symbol->getSymbol() == operand) {
-          // outputFile << symbol->getSymbol();
-          outputFile << symbol->getValue();
-          outputFile << " ";
+        int offset = 1;
+
+        if (command->operation == "COPY")
+          offset = 0;
+
+        // for each operand
+        for (auto operand:command->operands) {
+          // if operand is a symbol
+          for (auto symbol:TS) {
+            if (symbol->getSymbol() == operand) {
+              // outputFile << symbol->getSymbol();
+              outputFile << symbol->getValue();
+              outputFile << " ";
+
+              // if symbol is extern
+              if (symbol->externSymbol) {
+                Symbol * usedExternSymbol = new Symbol();
+
+                usedExternSymbol->setSymbol(symbol->getSymbol());
+
+                if (command->operation == "COPY")
+                  offset++;
+                  
+                usedExternSymbol->setValue(to_string(positionCounter + offset));
+
+                this->TU.push_back(usedExternSymbol);
+              }
+            }
+          }
         }
+
+        positionCounter += IT[i]->length;
       }
     }
 
-    // outputFile << endl;
+    outputFile << endl;
   }
 
   for (auto command:dataSection) {
-    if (command->operation == "SPACE")
-      for (int i = 0; i <= command->operands.size(); i++)
+    if (command->operation == "SPACE") {
+      for (int i = 0; i <= command->operands.size(); i++) {
+        outputFile << positionCounter << " ";
         outputFile << "00 ";
+        positionCounter += 1;
+      }
+    }
     
-    if (command->operation == "CONST")
-      outputFile << command->operands[0] << " ";
+    if (command->operation == "CONST") {
+      outputFile << positionCounter << " ";
+      outputFile << command->operands[0] << " " << endl;
+      positionCounter += 1;
+    }
     
-    // outputFile << endl;
+    outputFile << endl;
   }
 
   outputFile.close();
@@ -447,6 +479,7 @@ void Assembler::processFile() {
   printTextSection();
   printDataSection();
   printTS();
-  printTU();
+  printTD();
   secondPassage();
+  printTU();
 }
