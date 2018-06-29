@@ -373,6 +373,8 @@ void Assembler::secondPassage() {
   
   vector<string> textObject;
 
+  string bitmap = "";
+
   ofstream linkerTmp("tmp/linker_" + targetFileName + ".txt");
   ofstream outputFile("processed/" + targetFileName + ".o");
 
@@ -423,6 +425,8 @@ void Assembler::secondPassage() {
     // output opcode
     for (int i = 1; i <= 14; i++) {
       if (IT[i]->mnemonic == command->operation) {
+        bitmap.append("0");
+
         if (IT[i]->operands != command->operands.size()) {
           cout << "\033[1;31msintatic error:\033[0m wrong arguments number for " << command->operation << endl;
         }
@@ -451,6 +455,8 @@ void Assembler::secondPassage() {
 
               // if symbol is extern
               if (symbol->externSymbol) {
+                bitmap.append("1");
+
                 Symbol * usedExternSymbol = new Symbol();
 
                 usedExternSymbol->setSymbol(symbol->getSymbol());
@@ -461,6 +467,8 @@ void Assembler::secondPassage() {
                 usedExternSymbol->setValue(to_string(positionCounter + offset));
 
                 this->TU.push_back(usedExternSymbol);
+              } else {
+                bitmap.append("0");
               }
             }
           }
@@ -496,6 +504,8 @@ void Assembler::secondPassage() {
   if (this->module) {
     // object size
     outputFile << "H: " << textObject.size() - 1 << endl;
+    // object bitmap
+    outputFile << "H: " << bitmap << endl;
     // object use table
     outputFile << "H: ";
     outputFile << TU.size() << " ";

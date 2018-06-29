@@ -122,7 +122,7 @@ void Linker::linkObjects() {
   string line, token, aux;
 
   // get text mod A
-  stringstream ssTextA(intermediateObjectA[4]);
+  stringstream ssTextA(intermediateObjectA[5]);
 
   // discard T:
   ssTextA >> token;
@@ -131,7 +131,7 @@ void Linker::linkObjects() {
     textA.push_back(token);
 
   // get text mod B
-  stringstream ssTextB(intermediateObjectB[4]);
+  stringstream ssTextB(intermediateObjectB[5]);
 
   // discard T:
   ssTextB >> token;
@@ -143,7 +143,7 @@ void Linker::linkObjects() {
   // Replace Use Tables values of mod A
 
   // get TUA symbols count
-  stringstream ssTUA(intermediateObjectA[2]);
+  stringstream ssTUA(intermediateObjectA[3]);
 
   // discard H:
   ssTUA >> token;
@@ -165,7 +165,7 @@ void Linker::linkObjects() {
   // Replace Use Tables values of mod B
 
   // get TUB symbols count
-  stringstream ssTUB(intermediateObjectB[2]);
+  stringstream ssTUB(intermediateObjectB[3]);
 
   // discard H:
   ssTUB >> token;
