@@ -49,8 +49,8 @@ void Linker::buildTGD() {
   sizeA >> aux;
   this->correctionFactor = stoi(aux) + 1;
 
-  string TD_A = intermediateObjectA[3];
-  string TD_B = intermediateObjectB[3];
+  string TD_A = intermediateObjectA[4];
+  string TD_B = intermediateObjectB[4];
 
   stringstream ssA(TD_A);
 
@@ -97,7 +97,7 @@ void Linker::buildTGD() {
 }
 
 void Linker::printTGD() {
-  cout << "GENERAL DEFINITION TABLE" << endl;
+  cout << "GLOBAL DEFINITION TABLE" << endl;
 
   for (auto symbol:TGD)
     cout << "Symbol: " << symbol->getSymbol() << "; Value: " << symbol->getValue() << endl;
@@ -113,7 +113,7 @@ void Linker::linkObjects() {
   ofstream outputFile("processed/object.o");
 
   buildTGD();
-  // printTGD();
+  printTGD();
 
   vector<string> textA;
   vector<string> textB;
@@ -191,21 +191,21 @@ void Linker::linkObjects() {
   // Add correction factor to mod B
 
   int vAux;
-  bool indexReplaced = false;
+
+  stringstream bitmap(intermediateObjectB[2]);
+  string bitmapB;
+
+  bitmap >> token;
+  bitmap >> bitmapB;
+
+  cout << bitmapB << endl;
 
   while (getline(linkerTmpModB, line)) {
-    for (auto index:replaced) {
-      if (index == stoi(line))
-        indexReplaced = true; 
-    }
-
-    if (!indexReplaced) {
+    if (bitmapB[stoi(line)] == '0') {
       vAux = stoi(textB[stoi(line)]);
       vAux += correctionFactor;
       textB[stoi(line)] = to_string(vAux);
     }
-
-    indexReplaced = false;
   }
 
   for (auto code:textA)
