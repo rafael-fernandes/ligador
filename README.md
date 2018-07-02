@@ -72,10 +72,28 @@ O programa pode aceitar até dois programas de entrada:
 ./bin/main prog1 prog2
 ```
 
-Caso haja 2 programas de entrada, a ligação será feita automaticamente.
+Caso haja 2 programas de entrada, a ligação será feita automaticamente e a saída estará em `processed/object.o`.
 
 Lembre-se que o nome do arquivo de entrada não deve possuir extensão.
 
+---
+
+### Calculadora
+
+Para montar, utilize:
+```
+nasm -f  elf calculadora.asm -o calculadora.o
+```
+
+Para ligar, utilize:
+```
+ld -m elf_i386 -o calculadora calculadora.o
+```
+
+Para executar, utilize:
+```
+./calculadora
+```
 ---
 
 #### Testes

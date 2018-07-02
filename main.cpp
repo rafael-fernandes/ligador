@@ -62,6 +62,8 @@ int main(int argc, char ** argv) {
 
     Linker * linker = new Linker(modA, modB);
     linker->linkObjects();
+
+    cout << "A saida está em ./processed/object.o" << endl;
   }
 
   return 0;

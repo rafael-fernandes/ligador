@@ -113,7 +113,7 @@ void Linker::linkObjects() {
   ofstream outputFile("processed/object.o");
 
   buildTGD();
-  printTGD();
+  // printTGD();
 
   vector<string> textA;
   vector<string> textB;
@@ -198,7 +198,7 @@ void Linker::linkObjects() {
   bitmap >> token;
   bitmap >> bitmapB;
 
-  cout << bitmapB << endl;
+  // cout << bitmapB << endl;
 
   while (getline(linkerTmpModB, line)) {
     if (bitmapB[stoi(line)] == '0') {
